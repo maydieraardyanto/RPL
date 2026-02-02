@@ -14,12 +14,13 @@ datasource db {
 }
 
 model Book {
-  id        Int      @id @default(autoincrement())
-  title     String
-  author    String
-  year      Int
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id          Int           @id @default(autoincrement())
+  title       String
+  author      String
+  year        Int
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  loanDetail  LoanDetail[]
 }
 
 model Member {
@@ -29,6 +30,7 @@ model Member {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   user      User[]
+  loan      Loan[]
 }
 
 model User {
