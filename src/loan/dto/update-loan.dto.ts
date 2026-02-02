@@ -1,4 +1,12 @@
-import { PartialType } from '@nestjs/mapped-types';
-import { CreateLoanDto } from './create-loan.dto';
+import { IsInt, IsDateString, Min, IsOptional } from "class-validator";
 
-export class UpdateLoanDto extends PartialType(CreateLoanDto) {}
+export class CreateLoanDto {
+    @IsInt()
+    @Min(1)
+    @IsOptional()
+    memberId: number;
+
+    @IsDateString()
+    @IsOptional()
+    dueDate: string;
+}
