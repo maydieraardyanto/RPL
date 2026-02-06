@@ -48,7 +48,7 @@ model Loan {
   memberId    Int
   loanDate    DateTime      @default(now())
   dueDate     DateTime
-  returnDate  DateTime
+  returnDate  DateTime?
   status      LoanStatus    @default(BORROWED)
   member      Member        @relation(fields: [memberId], references: [id])
   details     LoanDetail[]
@@ -64,7 +64,7 @@ model LoanDetail {
   bookId  Int
   qty     Int   @default(1)
   loan    Loan  @relation(fields: [loanId], references: [id], onDelete: Cascade)
-  book    Book  @relation(fields: [bookId], references: [id])
+  book    Book  @relation(fields: [bookId], references: [id], onDelete: Restrict)
   @@unique([loanId, bookId])
   @@index([loanId])
   @@index([bookId])

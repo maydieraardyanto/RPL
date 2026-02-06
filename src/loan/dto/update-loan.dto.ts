@@ -1,12 +1,11 @@
-import { IsInt, IsDateString, Min, IsOptional } from "class-validator";
+import { IsOptional, IsDateString } from 'class-validator';
+import { LoanStatus } from '@prisma/client';
 
-export class CreateLoanDto {
-    @IsInt()
-    @Min(1)
-    @IsOptional()
-    memberId: number;
+export class UpdateLoanDto {
+  @IsOptional()
+  status?: LoanStatus;
 
-    @IsDateString()
-    @IsOptional()
-    dueDate: string;
+  @IsOptional()
+  @IsDateString()
+  returnDate?: string;
 }

@@ -1,59 +1,78 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { PrismaService } from '../prisma/prisma.service';
 import { CreateLoanDto } from './dto/create-loan.dto';
 import { UpdateLoanDto } from './dto/update-loan.dto';
-import { PrismaService } from 'src/prisma/prisma.service';
-import { LoanStatus } from '@prisma/client'
 
 @Injectable()
 export class LoanService {
   constructor(private prisma: PrismaService) {}
-  
-    async create(dto: CreateLoanDto) {
-      return this.prisma.loan.create({
-        data: {
-          memberId: dto.memberId,
-          duedate: new Date(dto.dueDate),
-          status: LoanStatus.BORROWED
-        }
-      })
+
+  async create(dto: CreateLoanDto) {
+    return this.prisma.loan.create({
+      data: {
+        memberId: dto.memberId,
+        dueDate: new Date(dto.dueDate),
+        status: 'BORROWED',
+        details: {
+          create: dto.books.map((b) => ({
+            bookId: b.bookId,
+            qty: b.qty,
+          })),
+        },
+      },
+      include: {
+        details: true,
+      },
+    });
+  }
+
+  async findAll() {
+    return this.prisma.loan.findMany({
+      include: {
+        member: true,
+        details: {
+          include: {
+            book: true,
+          },
+        },
+      },
+      orderBy: {
+        id: 'asc',
+      },
+    });
+  }
+
+  async findOne(id: number) {
+    const loan = await this.prisma.loan.findUnique({
+      where: { id },
+      include: {
+        member: true,
+        details: {
+          include: {
+            book: true,
+          },
+        },
+      },
+    });
+
+    if (!loan) {
+      throw new NotFoundException('Loan not found');
     }
 
-    async findAll() {
-      return this.prisma.loan.findMany({
-        include: {
-          member: true,
-          details: true
-        }
-      })
-    }
+    return loan;
+  }
 
-    async findOne (id: number) {
-      const loan = await this.prisma.loan.findUnique({
-        where: { id },
-        include: {
-          member: true,
-          details: true
-        }
-      })
+  async update(id: number, dto: UpdateLoanDto) {
+    await this.findOne(id);
 
-      if (!loan) throw new NotFoundException('Loan tidak ditemukan')
-        return loan
-    }
-
-    async Update(id: number Number, dto: UpdateLoanDto) {
-      await this.findOne(id)
-      return this.prisma.loan.update({
-        where: { id },
-        data: {
-          ...dto,
-          dueDate: dto.dueDate ? new Date(dto.dueDate) : undefined,
-        }
-      })
-    }
-
-    async remove(id: number) {
-      await this.findOne(id)
-      await this.prisma.loan.delete({ where: { id } })
-      return { message: 'Loan berhasil dihapus' }
-    }
+    return this.prisma.loan.update({
+      where: { id },
+      data: {
+        status: dto.status ?? 'RETURNED',
+        returnDate: dto.returnDate
+          ? new Date(dto.returnDate)
+          : new Date(),
+      },
+    });
+  }
 }
